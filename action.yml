@@ -1,0 +1,56 @@
+name: 'GrabShot Screenshot'
+description: 'Capture website screenshots in CI/CD with GrabShot API. Visual regression testing, OG image generation, and documentation screenshots.'
+author: 'aitaskorchestra'
+branding:
+  icon: 'camera'
+  color: 'purple'
+
+inputs:
+  api-key:
+    description: 'GrabShot API key (get free at grabshot.dev)'
+    required: true
+  url:
+    description: 'URL to screenshot'
+    required: true
+  output:
+    description: 'Output file path'
+    required: false
+    default: 'screenshot.png'
+  width:
+    description: 'Viewport width'
+    required: false
+    default: '1440'
+  height:
+    description: 'Viewport height'
+    required: false
+    default: '900'
+  full-page:
+    description: 'Capture full page'
+    required: false
+    default: 'false'
+  device:
+    description: 'Device frame (iphone-15, pixel-8, macbook-pro, etc.)'
+    required: false
+  format:
+    description: 'Image format (png, jpeg, webp)'
+    required: false
+    default: 'png'
+  compare:
+    description: 'Path to baseline image for visual comparison'
+    required: false
+  threshold:
+    description: 'Pixel difference threshold percentage (0-100) for comparison'
+    required: false
+    default: '1'
+
+outputs:
+  file:
+    description: 'Path to the captured screenshot'
+  changed:
+    description: 'Whether the screenshot differs from baseline (true/false)'
+  diff-percentage:
+    description: 'Percentage of pixels that changed'
+
+runs:
+  using: 'node20'
+  main: 'index.js'
