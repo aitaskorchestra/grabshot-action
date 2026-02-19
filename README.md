@@ -1,107 +1,75 @@
 # GrabShot Screenshot Action
 
-Capture website screenshots in your CI/CD pipeline with [GrabShot](https://grabshot.dev) — a fast, reliable screenshot API with device frames and AI cleanup.
+Capture website screenshots in your GitHub Actions workflows. Perfect for visual regression testing, generating OG images, monitoring website changes, and documentation.
 
-## Features
-
-- 📸 **Capture screenshots** of any URL in your workflow
-- 📱 **Device frames** — iPhone, Pixel, MacBook, and more
-- 🔍 **Visual regression testing** — compare against baselines
-- ⚡ **Fast** — screenshots in under 3 seconds
-- 🆓 **Free tier** — 25 screenshots/month, no credit card needed
-
-## Quick Start
+## Usage
 
 ```yaml
-- uses: aitaskorchestra/grabshot-action@v1
+- name: Capture screenshot
+  uses: aitaskorchestra/grabshot-action@v1
   with:
     api-key: ${{ secrets.GRABSHOT_API_KEY }}
     url: 'https://example.com'
     output: 'screenshots/homepage.png'
 ```
 
-Get your free API key at [grabshot.dev](https://grabshot.dev).
-
-## Usage Examples
-
-### Basic Screenshot
-```yaml
-name: Screenshot
-on: [push]
-jobs:
-  screenshot:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: aitaskorchestra/grabshot-action@v1
-        with:
-          api-key: ${{ secrets.GRABSHOT_API_KEY }}
-          url: 'https://myapp.com'
-```
-
 ### Visual Regression Testing
+
 ```yaml
 name: Visual Regression
 on: [pull_request]
 jobs:
-  visual-test:
+  screenshots:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: aitaskorchestra/grabshot-action@v1
-        id: screenshot
+      
+      - name: Screenshot staging
+        uses: aitaskorchestra/grabshot-action@v1
         with:
           api-key: ${{ secrets.GRABSHOT_API_KEY }}
-          url: 'https://staging.myapp.com'
-          output: 'current.png'
-          compare: 'baselines/homepage.png'
-          threshold: '2'
-      - name: Check for changes
-        if: steps.screenshot.outputs.changed == 'true'
-        run: echo "Visual regression detected! ${{ steps.screenshot.outputs.diff-percentage }}% changed"
+          url: 'https://staging.example.com'
+          output: 'screenshots/staging.png'
+          width: '1440'
+          full-page: 'true'
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/
 ```
 
-### Device Frame Screenshots
-```yaml
-- uses: aitaskorchestra/grabshot-action@v1
-  with:
-    api-key: ${{ secrets.GRABSHOT_API_KEY }}
-    url: 'https://myapp.com'
-    device: 'iphone-15'
-    output: 'screenshots/mobile.png'
-```
+### Generate OG Images
 
-### Full Page Capture
 ```yaml
-- uses: aitaskorchestra/grabshot-action@v1
+- name: Generate OG image
+  uses: aitaskorchestra/grabshot-action@v1
   with:
     api-key: ${{ secrets.GRABSHOT_API_KEY }}
-    url: 'https://myapp.com/docs'
-    full-page: 'true'
-    output: 'screenshots/docs-full.png'
+    url: 'https://mysite.com/og-template?title=My+Post'
+    output: 'public/og-image.png'
+    width: '1200'
+    height: '630'
 ```
 
 ## Inputs
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
-| `api-key` | GrabShot API key | ✅ | — |
-| `url` | URL to screenshot | ✅ | — |
-| `output` | Output file path | ❌ | `screenshot.png` |
-| `width` | Viewport width | ❌ | `1440` |
-| `height` | Viewport height | ❌ | `900` |
-| `full-page` | Capture full page | ❌ | `false` |
-| `device` | Device frame | ❌ | — |
-| `format` | Image format (png/jpeg/webp) | ❌ | `png` |
-| `compare` | Baseline image path | ❌ | — |
-| `threshold` | Diff threshold % | ❌ | `1` |
+| `api-key` | Your GrabShot API key | Yes | - |
+| `url` | URL to screenshot | Yes | - |
+| `output` | Output file path | No | `screenshot.png` |
+| `width` | Viewport width | No | `1440` |
+| `height` | Viewport height | No | `900` |
+| `full-page` | Capture full page | No | `false` |
+| `format` | Output format (png, jpeg, webp) | No | `png` |
+| `delay` | Wait time in ms | No | `0` |
 
-## Outputs
+## Get Your API Key
 
-| Output | Description |
-|--------|-------------|
-| `file` | Path to captured screenshot |
-| `changed` | Whether screenshot differs from baseline |
-| `diff-percentage` | Percentage of changed pixels |
+1. Sign up free at [grabshot.dev](https://grabshot.dev) (25 screenshots/month free)
+2. Add the key as a repository secret: `GRABSHOT_API_KEY`
 
 ## License
 
