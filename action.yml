@@ -1,4 +1,4 @@
-name: 'GrabShot - Website Screenshot'
+name: 'GrabShot Screenshot'
 description: 'Capture website screenshots in your CI/CD pipeline. Visual regression testing, OG image generation, documentation screenshots.'
 author: 'GrabShot'
 branding:
@@ -19,25 +19,29 @@ inputs:
   width:
     description: 'Viewport width'
     required: false
-    default: '1440'
+    default: '1280'
   height:
     description: 'Viewport height'
     required: false
-    default: '900'
+    default: '800'
   full-page:
     description: 'Capture full page'
     required: false
     default: 'false'
   device:
-    description: 'Device frame (iphone-15, macbook-pro, pixel-8, ipad-pro, none)'
+    description: 'Device frame (iphone-15, pixel-8, macbook, none)'
     required: false
     default: 'none'
   format:
     description: 'Output format (png, jpeg, webp)'
     required: false
     default: 'png'
-  wait:
-    description: 'Wait time in ms before capture'
+  block-ads:
+    description: 'Block ads and trackers'
+    required: false
+    default: 'false'
+  delay:
+    description: 'Wait milliseconds before capture'
     required: false
     default: '0'
 
@@ -46,38 +50,9 @@ outputs:
     description: 'Path to the saved screenshot'
   size:
     description: 'File size in bytes'
+  duration:
+    description: 'Capture time in milliseconds'
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Capture Screenshot
-      shell: bash
-      run: |
-        PARAMS="url=${{ inputs.url }}&width=${{ inputs.width }}&height=${{ inputs.height }}&format=${{ inputs.format }}"
-        
-        if [ "${{ inputs.full-page }}" = "true" ]; then
-          PARAMS="${PARAMS}&fullPage=true"
-        fi
-        
-        if [ "${{ inputs.device }}" != "none" ]; then
-          PARAMS="${PARAMS}&device=${{ inputs.device }}"
-        fi
-        
-        if [ "${{ inputs.wait }}" != "0" ]; then
-          PARAMS="${PARAMS}&wait=${{ inputs.wait }}"
-        fi
-        
-        HTTP_CODE=$(curl -s -w "%{http_code}" -o "${{ inputs.output }}" \
-          "https://grabshot.dev/v1/screenshot?${PARAMS}" \
-          -H "Authorization: Bearer ${{ inputs.api-key }}")
-        
-        if [ "$HTTP_CODE" != "200" ]; then
-          echo "::error::Screenshot failed with HTTP $HTTP_CODE"
-          cat "${{ inputs.output }}"
-          exit 1
-        fi
-        
-        SIZE=$(stat -f%z "${{ inputs.output }}" 2>/dev/null || stat -c%s "${{ inputs.output }}")
-        echo "file=${{ inputs.output }}" >> $GITHUB_OUTPUT
-        echo "size=${SIZE}" >> $GITHUB_OUTPUT
-        echo "✅ Screenshot saved to ${{ inputs.output }} (${SIZE} bytes)"
+  using: 'node20'
+  main: 'dist/index.js'
