@@ -1,57 +1,56 @@
 name: 'GrabShot Screenshot'
-description: 'Capture website screenshots in your CI/CD pipeline. Visual regression testing, OG image generation, documentation screenshots.'
-author: 'GrabShot'
+description: 'Capture website screenshots in your CI/CD pipeline. Device frames, full-page, PDF, and AI cleanup. Free tier: 25 screenshots/month.'
+author: 'GrabShot <hello@grabshot.dev>'
+
 branding:
   icon: 'camera'
   color: 'blue'
 
 inputs:
-  url:
-    description: 'URL to screenshot'
-    required: true
   api-key:
-    description: 'GrabShot API key (get free at grabshot.dev)'
+    description: 'Your GrabShot API key (get one free at grabshot.dev)'
+    required: true
+  url:
+    description: 'URL to capture'
     required: true
   output:
     description: 'Output file path'
     required: false
     default: 'screenshot.png'
   width:
-    description: 'Viewport width'
+    description: 'Viewport width (default: 1280)'
     required: false
     default: '1280'
   height:
-    description: 'Viewport height'
+    description: 'Viewport height (default: 800)'
     required: false
     default: '800'
   full-page:
-    description: 'Capture full page'
+    description: 'Capture full page (true/false)'
     required: false
     default: 'false'
-  device:
-    description: 'Device frame (iphone-15, pixel-8, macbook, none)'
+  frame:
+    description: 'Device frame: none, browser, iphone, macbook, ipad'
     required: false
     default: 'none'
   format:
-    description: 'Output format (png, jpeg, webp)'
+    description: 'Output format: png, jpeg, webp, pdf'
     required: false
     default: 'png'
-  block-ads:
-    description: 'Block ads and trackers'
-    required: false
-    default: 'false'
   delay:
-    description: 'Wait milliseconds before capture'
+    description: 'Wait time in ms before capture'
     required: false
     default: '0'
+  ai-cleanup:
+    description: 'AI cleanup to remove popups/banners (paid plans)'
+    required: false
+    default: 'false'
 
 outputs:
   file:
-    description: 'Path to the saved screenshot'
+    description: 'Path to the captured screenshot'
   size:
     description: 'File size in bytes'
-  duration:
-    description: 'Capture time in milliseconds'
 
 runs:
   using: 'node20'

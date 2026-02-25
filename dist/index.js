@@ -27557,83 +27557,66 @@ module.exports = parseParams
 var __webpack_exports__ = {};
 const core = __nccwpck_require__(1836);
 const fs = __nccwpck_require__(9896);
-const path = __nccwpck_require__(6928);
 const https = __nccwpck_require__(5692);
+const path = __nccwpck_require__(6928);
 
 async function run() {
   try {
-    const url = core.getInput('url', { required: true });
     const apiKey = core.getInput('api-key', { required: true });
+    const url = core.getInput('url', { required: true });
     const output = core.getInput('output') || 'screenshot.png';
-    const width = parseInt(core.getInput('width') || '1280');
-    const height = parseInt(core.getInput('height') || '800');
+    const width = core.getInput('width') || '1280';
+    const height = core.getInput('height') || '800';
     const fullPage = core.getInput('full-page') === 'true';
-    const device = core.getInput('device') || 'none';
+    const frame = core.getInput('frame') || 'none';
     const format = core.getInput('format') || 'png';
-    const blockAds = core.getInput('block-ads') === 'true';
-    const delay = parseInt(core.getInput('delay') || '0');
+    const delay = core.getInput('delay') || '0';
+    const aiCleanup = core.getInput('ai-cleanup') === 'true';
 
-    core.info(`Capturing screenshot of ${url}...`);
-
-    const body = JSON.stringify({
+    const params = new URLSearchParams({
       url,
+      apiKey,
       width,
       height,
-      fullPage,
-      device: device !== 'none' ? device : undefined,
       format,
-      blockAds,
-      delay: delay > 0 ? delay : undefined,
     });
 
-    const start = Date.now();
+    if (fullPage) params.set('fullPage', 'true');
+    if (frame !== 'none') params.set('frame', frame);
+    if (parseInt(delay) > 0) params.set('delay', delay);
+    if (aiCleanup) params.set('aiCleanup', 'true');
 
-    const imageBuffer = await new Promise((resolve, reject) => {
-      const req = https.request({
-        hostname: 'grabshot.dev',
-        path: '/v1/screenshot',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
-          'Content-Length': Buffer.byteLength(body),
-        },
-        timeout: 60000,
-      }, (res) => {
+    const endpoint = `https://grabshot.dev/v1/screenshot?${params.toString()}`;
+
+    core.info(`Capturing screenshot of ${url}...`);
+    core.info(`Settings: ${width}x${height}, frame=${frame}, format=${format}`);
+
+    const data = await new Promise((resolve, reject) => {
+      https.get(endpoint, (res) => {
+        if (res.statusCode !== 200) {
+          let body = '';
+          res.on('data', c => body += c);
+          res.on('end', () => reject(new Error(`API returned ${res.statusCode}: ${body}`)));
+          return;
+        }
         const chunks = [];
-        res.on('data', chunk => chunks.push(chunk));
-        res.on('end', () => {
-          const data = Buffer.concat(chunks);
-          if (res.statusCode !== 200) {
-            let msg;
-            try { msg = JSON.parse(data.toString()).error; } catch { msg = data.toString().slice(0, 200); }
-            reject(new Error(`API returned ${res.statusCode}: ${msg}`));
-          } else {
-            resolve(data);
-          }
-        });
-      });
-      req.on('error', reject);
-      req.on('timeout', () => { req.destroy(); reject(new Error('Request timed out (60s)')); });
-      req.write(body);
-      req.end();
+        res.on('data', c => chunks.push(c));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+      }).on('error', reject);
     });
-
-    const duration = Date.now() - start;
 
     // Ensure output directory exists
     const dir = path.dirname(output);
     if (dir && dir !== '.') fs.mkdirSync(dir, { recursive: true });
 
-    fs.writeFileSync(output, imageBuffer);
+    fs.writeFileSync(output, data);
 
-    core.info(`Screenshot saved to ${output} (${imageBuffer.length} bytes, ${duration}ms)`);
+    core.info(`Screenshot saved to ${output} (${data.length} bytes)`);
     core.setOutput('file', output);
-    core.setOutput('size', imageBuffer.length.toString());
-    core.setOutput('duration', duration.toString());
+    core.setOutput('size', data.length.toString());
 
   } catch (error) {
-    core.setFailed(error.message);
+    core.setFailed(`GrabShot screenshot failed: ${error.message}`);
   }
 }
 
