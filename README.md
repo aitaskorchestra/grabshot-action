@@ -1,134 +1,82 @@
 # GrabShot Screenshot Action
 
-Capture website screenshots in your GitHub Actions workflow. Perfect for visual regression testing, generating OG images, documentation screenshots, and deployment previews.
-
-## Features
-
-- Capture any URL as PNG, JPEG, WebP, or PDF
-- Device frames (iPhone, MacBook, iPad, browser chrome)
-- Full-page screenshots
-- AI-powered popup/banner removal (paid plans)
-- 25 free screenshots/month
+Capture website screenshots in your GitHub Actions workflows. Use for visual regression testing, deploy previews, documentation, and social media images.
 
 ## Quick Start
 
 ```yaml
 - uses: aitaskorchestra/grabshot-action@v1
   with:
-    api-key: ${{ secrets.GRABSHOT_API_KEY }}
     url: 'https://your-site.com'
-    output: 'screenshots/preview.png'
+    api-key: ${{ secrets.GRABSHOT_API_KEY }}
 ```
 
-Get your free API key at [grabshot.dev](https://grabshot.dev) (no credit card needed).
+Get a free API key at [grabshot.dev](https://grabshot.dev) -- 25 screenshots/month, no credit card.
 
 ## Inputs
 
 | Input | Description | Default |
 |-------|-------------|---------|
-| `api-key` | Your GrabShot API key (required) | - |
-| `url` | URL to capture (required) | - |
-| `output` | Output file path | `screenshot.png` |
-| `width` | Viewport width | `1280` |
-| `height` | Viewport height | `800` |
-| `full-page` | Capture full page | `false` |
-| `frame` | Device frame: `none`, `browser`, `iphone`, `macbook`, `ipad` | `none` |
-| `format` | Output: `png`, `jpeg`, `webp`, `pdf` | `png` |
-| `delay` | Wait time in ms before capture | `0` |
-| `ai-cleanup` | Remove popups/banners (paid plans) | `false` |
-
-## Outputs
-
-| Output | Description |
-|--------|-------------|
-| `file` | Path to the saved screenshot |
-| `size` | File size in bytes |
+| `url` | URL to screenshot | (required) |
+| `api-key` | Your GrabShot API key | (required) |
+| `width` | Viewport width in pixels | `1280` |
+| `height` | Viewport height in pixels | `720` |
+| `full-page` | Capture the entire page | `false` |
+| `device-frame` | Wrap in device frame: `macbook`, `iphone`, `ipad`, `pixel` | `none` |
+| `format` | Image format: `png`, `jpeg`, `webp` | `png` |
+| `output` | Where to save the file | `screenshot.png` |
+| `delay` | Milliseconds to wait before capture | `0` |
 
 ## Examples
 
-### Visual Regression on PR
+### Screenshot after deploy
 
 ```yaml
-name: Visual Regression
-on: pull_request
+name: Deploy Preview
+on:
+  deployment_status:
 
 jobs:
   screenshot:
+    if: github.event.deployment_status.state == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: aitaskorchestra/grabshot-action@v1
         with:
+          url: ${{ github.event.deployment_status.target_url }}
           api-key: ${{ secrets.GRABSHOT_API_KEY }}
-          url: 'https://pr-${{ github.event.number }}.preview.example.com'
-          output: 'screenshots/pr-preview.png'
-          frame: 'browser'
+          device-frame: macbook
 
       - uses: actions/upload-artifact@v4
         with:
-          name: screenshots
-          path: screenshots/
+          name: screenshot
+          path: screenshot.png
 ```
 
-### Generate OG Image on Deploy
+### Multiple viewports
 
 ```yaml
-name: Generate OG Image
-on:
-  push:
-    branches: [main]
+steps:
+  - uses: aitaskorchestra/grabshot-action@v1
+    with:
+      url: 'https://example.com'
+      api-key: ${{ secrets.GRABSHOT_API_KEY }}
+      device-frame: iphone
+      width: '390'
+      height: '844'
+      output: mobile.png
 
-jobs:
-  og-image:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: aitaskorchestra/grabshot-action@v1
-        with:
-          api-key: ${{ secrets.GRABSHOT_API_KEY }}
-          url: 'https://your-site.com'
-          output: 'public/og-image.png'
-          width: '1200'
-          height: '630'
-          frame: 'browser'
-
-      - run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add public/og-image.png
-          git commit -m "Update OG image" || true
-          git push
+  - uses: aitaskorchestra/grabshot-action@v1
+    with:
+      url: 'https://example.com'
+      api-key: ${{ secrets.GRABSHOT_API_KEY }}
+      device-frame: macbook
+      output: desktop.png
 ```
 
-### Multi-device Screenshots
+## About GrabShot
 
-```yaml
-- uses: aitaskorchestra/grabshot-action@v1
-  with:
-    api-key: ${{ secrets.GRABSHOT_API_KEY }}
-    url: 'https://your-site.com'
-    output: 'screenshots/desktop.png'
-    width: '1440'
-    frame: 'macbook'
-
-- uses: aitaskorchestra/grabshot-action@v1
-  with:
-    api-key: ${{ secrets.GRABSHOT_API_KEY }}
-    url: 'https://your-site.com'
-    output: 'screenshots/mobile.png'
-    width: '390'
-    height: '844'
-    frame: 'iphone'
-```
-
-## Pricing
-
-- **Free**: 25 screenshots/month (watermarked)
-- **Starter** ($9/mo): 1,000 screenshots, no watermark
-- **Pro** ($29/mo): 5,000 screenshots, AI cleanup
-- **Business** ($79/mo): 25,000 screenshots, priority support
-
-[Sign up free at grabshot.dev](https://grabshot.dev)
+[GrabShot](https://grabshot.dev) is a screenshot API with device frames, full-page capture, and AI-powered cleanup. Free tier includes 25 screenshots/month.
 
 ## License
 
