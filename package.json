@@ -4,8 +4,13 @@
   "description": "GitHub Action to capture website screenshots with GrabShot API",
   "main": "index.js",
   "dependencies": {
-    "@actions/core": "^1.10.0"
+    "@actions/core": "^1.11.1"
   },
-  "keywords": ["github-action", "screenshot", "website-capture", "og-image"],
+  "keywords": [
+    "github-action",
+    "screenshot",
+    "website-capture",
+    "og-image"
+  ],
   "license": "MIT"
 }

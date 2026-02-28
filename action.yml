@@ -1,57 +1,40 @@
-name: 'GrabShot Screenshot'
-description: 'Capture website screenshots in your CI/CD pipeline. Device frames, full-page, PDF, and AI cleanup. Free tier: 25 screenshots/month.'
-author: 'GrabShot <hello@grabshot.dev>'
-
+name: 'GrabShot - Website Screenshot'
+description: 'Capture beautiful website screenshots in CI/CD. Device frames, full-page, AI cleanup.'
+author: 'GrabShot'
 branding:
   icon: 'camera'
   color: 'blue'
-
 inputs:
-  api-key:
-    description: 'Your GrabShot API key (get one free at grabshot.dev)'
-    required: true
   url:
-    description: 'URL to capture'
+    description: 'URL to screenshot'
     required: true
-  output:
-    description: 'Output file path'
-    required: false
-    default: 'screenshot.png'
+  api-key:
+    description: 'GrabShot API key (free at grabshot.dev)'
+    required: true
   width:
-    description: 'Viewport width (default: 1280)'
-    required: false
+    description: 'Viewport width'
     default: '1280'
   height:
-    description: 'Viewport height (default: 800)'
-    required: false
-    default: '800'
+    description: 'Viewport height'
+    default: '720'
   full-page:
-    description: 'Capture full page (true/false)'
-    required: false
+    description: 'Capture full page'
     default: 'false'
-  frame:
-    description: 'Device frame: none, browser, iphone, macbook, ipad'
-    required: false
+  device-frame:
+    description: 'Device frame (none/macbook/iphone/ipad/pixel)'
     default: 'none'
   format:
-    description: 'Output format: png, jpeg, webp, pdf'
-    required: false
+    description: 'Output format (png/jpeg/webp)'
     default: 'png'
+  output:
+    description: 'Output file path'
+    default: 'screenshot.png'
   delay:
-    description: 'Wait time in ms before capture'
-    required: false
+    description: 'Wait before capture (ms)'
     default: '0'
-  ai-cleanup:
-    description: 'AI cleanup to remove popups/banners (paid plans)'
-    required: false
-    default: 'false'
-
 outputs:
   file:
-    description: 'Path to the captured screenshot'
-  size:
-    description: 'File size in bytes'
-
+    description: 'Path to the screenshot file'
 runs:
   using: 'node20'
-  main: 'dist/index.js'
+  main: 'index.js'

@@ -1,66 +1,46 @@
 const core = require('@actions/core');
 const fs = require('fs');
 const https = require('https');
-const path = require('path');
 
 async function run() {
   try {
-    const apiKey = core.getInput('api-key', { required: true });
     const url = core.getInput('url', { required: true });
-    const output = core.getInput('output') || 'screenshot.png';
+    const apiKey = core.getInput('api-key', { required: true });
     const width = core.getInput('width') || '1280';
-    const height = core.getInput('height') || '800';
+    const height = core.getInput('height') || '720';
     const fullPage = core.getInput('full-page') === 'true';
-    const frame = core.getInput('frame') || 'none';
+    const deviceFrame = core.getInput('device-frame') || 'none';
     const format = core.getInput('format') || 'png';
+    const output = core.getInput('output') || `screenshot.${format}`;
     const delay = core.getInput('delay') || '0';
-    const aiCleanup = core.getInput('ai-cleanup') === 'true';
 
-    const params = new URLSearchParams({
-      url,
-      apiKey,
-      width,
-      height,
-      format,
-    });
-
+    const params = new URLSearchParams({ url, apiKey, width, height, format, delay });
     if (fullPage) params.set('fullPage', 'true');
-    if (frame !== 'none') params.set('frame', frame);
-    if (parseInt(delay) > 0) params.set('delay', delay);
-    if (aiCleanup) params.set('aiCleanup', 'true');
-
-    const endpoint = `https://grabshot.dev/v1/screenshot?${params.toString()}`;
+    if (deviceFrame !== 'none') params.set('deviceFrame', deviceFrame);
 
     core.info(`Capturing screenshot of ${url}...`);
-    core.info(`Settings: ${width}x${height}, frame=${frame}, format=${format}`);
 
-    const data = await new Promise((resolve, reject) => {
-      https.get(endpoint, (res) => {
+    await new Promise((resolve, reject) => {
+      https.get(`https://grabshot.dev/v1/screenshot?${params}`, (res) => {
         if (res.statusCode !== 200) {
           let body = '';
-          res.on('data', c => body += c);
-          res.on('end', () => reject(new Error(`API returned ${res.statusCode}: ${body}`)));
+          res.on('data', d => body += d);
+          res.on('end', () => reject(new Error(`API error (${res.statusCode}): ${body}`)));
           return;
         }
         const chunks = [];
-        res.on('data', c => chunks.push(c));
-        res.on('end', () => resolve(Buffer.concat(chunks)));
-      }).on('error', reject);
+        res.on('data', chunk => chunks.push(chunk));
+        res.on('end', () => {
+          fs.writeFileSync(output, Buffer.concat(chunks));
+          resolve();
+        });
+      }).on('error', reject).setTimeout(60000, function() { this.destroy(); reject(new Error('Timeout')); });
     });
 
-    // Ensure output directory exists
-    const dir = path.dirname(output);
-    if (dir && dir !== '.') fs.mkdirSync(dir, { recursive: true });
-
-    fs.writeFileSync(output, data);
-
-    core.info(`Screenshot saved to ${output} (${data.length} bytes)`);
     core.setOutput('file', output);
-    core.setOutput('size', data.length.toString());
-
+    core.info(`Saved to ${output} (${fs.statSync(output).size} bytes)`);
   } catch (error) {
-    core.setFailed(`GrabShot screenshot failed: ${error.message}`);
+    core.setFailed(error.message);
   }
 }
-
 run();
