@@ -1,40 +1,44 @@
-name: 'GrabShot - Website Screenshot'
-description: 'Capture beautiful website screenshots in CI/CD. Device frames, full-page, AI cleanup.'
+name: 'GrabShot Screenshot'
+description: 'Capture website screenshots in your CI/CD pipeline. Visual regression testing, documentation, and monitoring.'
 author: 'GrabShot'
 branding:
   icon: 'camera'
   color: 'blue'
+
 inputs:
   url:
     description: 'URL to screenshot'
     required: true
   api-key:
-    description: 'GrabShot API key (free at grabshot.dev)'
+    description: 'GrabShot API key (get free at grabshot.dev)'
     required: true
   width:
-    description: 'Viewport width'
+    description: 'Viewport width in pixels'
+    required: false
     default: '1280'
   height:
-    description: 'Viewport height'
-    default: '720'
+    description: 'Viewport height in pixels'
+    required: false
+    default: '800'
   full-page:
-    description: 'Capture full page'
+    description: 'Capture full page screenshot'
+    required: false
     default: 'false'
-  device-frame:
-    description: 'Device frame (none/macbook/iphone/ipad/pixel)'
-    default: 'none'
-  format:
-    description: 'Output format (png/jpeg/webp)'
-    default: 'png'
   output:
     description: 'Output file path'
+    required: false
     default: 'screenshot.png'
   delay:
-    description: 'Wait before capture (ms)'
+    description: 'Wait time in ms before capture'
+    required: false
     default: '0'
+
 outputs:
   file:
-    description: 'Path to the screenshot file'
+    description: 'Path to the saved screenshot'
+  size:
+    description: 'File size in bytes'
+
 runs:
   using: 'node20'
   main: 'index.js'

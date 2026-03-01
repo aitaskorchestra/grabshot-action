@@ -1,16 +1,9 @@
 {
   "name": "grabshot-action",
   "version": "1.0.0",
-  "description": "GitHub Action to capture website screenshots with GrabShot API",
+  "description": "GitHub Action to capture website screenshots using GrabShot API",
   "main": "index.js",
   "dependencies": {
-    "@actions/core": "^1.11.1"
-  },
-  "keywords": [
-    "github-action",
-    "screenshot",
-    "website-capture",
-    "og-image"
-  ],
-  "license": "MIT"
+    "@actions/core": "^1.10.0"
+  }
 }

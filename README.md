@@ -1,82 +1,98 @@
 # GrabShot Screenshot Action
 
-Capture website screenshots in your GitHub Actions workflows. Use for visual regression testing, deploy previews, documentation, and social media images.
+Capture website screenshots directly in your GitHub Actions workflow. Perfect for visual regression testing, documentation generation, and site monitoring.
 
-## Quick Start
+## Usage
 
 ```yaml
-- uses: aitaskorchestra/grabshot-action@v1
+- name: Take screenshot
+  uses: aitaskorchestra/grabshot-action@v1
   with:
-    url: 'https://your-site.com'
+    url: 'https://example.com'
     api-key: ${{ secrets.GRABSHOT_API_KEY }}
+    width: '1440'
+    full-page: 'true'
+    output: 'screenshots/homepage.png'
 ```
 
-Get a free API key at [grabshot.dev](https://grabshot.dev) -- 25 screenshots/month, no credit card.
+## Get Your Free API Key
+
+Sign up at [grabshot.dev](https://grabshot.dev) - 100 free screenshots per month, no credit card required.
 
 ## Inputs
 
-| Input | Description | Default |
-|-------|-------------|---------|
-| `url` | URL to screenshot | (required) |
-| `api-key` | Your GrabShot API key | (required) |
-| `width` | Viewport width in pixels | `1280` |
-| `height` | Viewport height in pixels | `720` |
-| `full-page` | Capture the entire page | `false` |
-| `device-frame` | Wrap in device frame: `macbook`, `iphone`, `ipad`, `pixel` | `none` |
-| `format` | Image format: `png`, `jpeg`, `webp` | `png` |
-| `output` | Where to save the file | `screenshot.png` |
-| `delay` | Milliseconds to wait before capture | `0` |
+| Input | Description | Required | Default |
+|-------|-------------|----------|---------|
+| `url` | URL to screenshot | Yes | - |
+| `api-key` | GrabShot API key | Yes | - |
+| `width` | Viewport width (px) | No | `1280` |
+| `height` | Viewport height (px) | No | `800` |
+| `full-page` | Capture full page | No | `false` |
+| `output` | Output file path | No | `screenshot.png` |
+| `delay` | Wait before capture (ms) | No | `0` |
+
+## Outputs
+
+| Output | Description |
+|--------|-------------|
+| `file` | Path to saved screenshot |
+| `size` | File size in bytes |
 
 ## Examples
 
-### Screenshot after deploy
+### Visual Regression on PRs
 
 ```yaml
-name: Deploy Preview
-on:
-  deployment_status:
+name: Visual Regression
+on: pull_request
 
 jobs:
-  screenshot:
-    if: github.event.deployment_status.state == 'success'
+  screenshots:
     runs-on: ubuntu-latest
     steps:
-      - uses: aitaskorchestra/grabshot-action@v1
+      - uses: actions/checkout@v4
+      
+      - name: Screenshot production
+        uses: aitaskorchestra/grabshot-action@v1
         with:
-          url: ${{ github.event.deployment_status.target_url }}
+          url: 'https://mysite.com'
           api-key: ${{ secrets.GRABSHOT_API_KEY }}
-          device-frame: macbook
-
-      - uses: actions/upload-artifact@v4
+          output: 'screenshots/production.png'
+      
+      - name: Screenshot PR preview
+        uses: aitaskorchestra/grabshot-action@v1
         with:
-          name: screenshot
-          path: screenshot.png
+          url: 'https://pr-${{ github.event.number }}.preview.mysite.com'
+          api-key: ${{ secrets.GRABSHOT_API_KEY }}
+          output: 'screenshots/preview.png'
+      
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression
+          path: screenshots/
 ```
 
-### Multiple viewports
+### Scheduled Site Monitoring
 
 ```yaml
-steps:
-  - uses: aitaskorchestra/grabshot-action@v1
-    with:
-      url: 'https://example.com'
-      api-key: ${{ secrets.GRABSHOT_API_KEY }}
-      device-frame: iphone
-      width: '390'
-      height: '844'
-      output: mobile.png
+name: Site Monitor
+on:
+  schedule:
+    - cron: '0 */6 * * *'
 
-  - uses: aitaskorchestra/grabshot-action@v1
-    with:
-      url: 'https://example.com'
-      api-key: ${{ secrets.GRABSHOT_API_KEY }}
-      device-frame: macbook
-      output: desktop.png
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Screenshot site
+        uses: aitaskorchestra/grabshot-action@v1
+        with:
+          url: 'https://mysite.com'
+          api-key: ${{ secrets.GRABSHOT_API_KEY }}
+          output: 'monitor/site-${{ github.run_number }}.png'
+          full-page: 'true'
 ```
-
-## About GrabShot
-
-[GrabShot](https://grabshot.dev) is a screenshot API with device frames, full-page capture, and AI-powered cleanup. Free tier includes 25 screenshots/month.
 
 ## License
 
